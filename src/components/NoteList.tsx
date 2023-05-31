@@ -5,9 +5,15 @@ import ReactSelect from "react-select"
 import { Note, Tag } from '../App'
 import NoteCard from './NoteCard'
 
+export type SimplifiedNotes = {
+  tags: Tag[]
+  title: string
+  id: string
+}
+
 type NoteListProps = {
   availableTags: Tag[];
-  notes: Note[];
+  notes: SimplifiedNotes[];
 }
 
 const NoteList = ({ availableTags, notes }: NoteListProps) => {
@@ -17,8 +23,8 @@ const NoteList = ({ availableTags, notes }: NoteListProps) => {
 
   const filteredNotes = useMemo(() => {
     return notes.filter(note => {
-      return (title === "" || note.title.toLowerCase().includes(title.toLowerCase()))
-        && (selectedTags.length === 0 || selectedTags.every(tag => note.tags.some(noteTag => noteTag.id === tag.id)))
+      return ((title === "" || note.title.toLowerCase().includes(title.toLowerCase()))
+        && (selectedTags.length === 0 || selectedTags.every(tag => note.tags.some(noteTag => noteTag.id === tag.id))))
     })
   }, [title, selectedTags, notes])
 
