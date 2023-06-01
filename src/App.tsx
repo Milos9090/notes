@@ -25,6 +25,7 @@ export type RawNoteData = {
 }
 
 export type NoteData = {
+  id?: string;
   title: string;
   markdown: string;
   tags: Tag[]
@@ -50,18 +51,49 @@ function App() {
     setNotes(prevNotes => [...prevNotes, { ...data, id: uuidV4(), tagsIds: tags.map(tag => tag.id) }])
   }
 
-  function addTag(tag: Tag){
+  function onDelete(id: string) {
+    setNotes(prevNotes => prevNotes.filter(note => note.id !== id));
+  }
+
+  function onUpdateNote({ id, tags, ...data }: NoteData) {
+    setNotes(prevNotes => prevNotes.map(note => {
+      if (note.id === id) {
+        return {
+          ...note, ...data, id: uuidV4(), tagIds:
+            tags.map(tag => tag.id)
+        }
+      } else {
+        return note;
+      }
+    }))
+  }
+
+  function addTag(tag: Tag) {
     setTags(prev => [...prev, tag])
+  }
+
+  function updateTag(id: string, label: string) {
+    setTags(prev => prev.map(tag => {
+      if (tag.id === id) {
+        return { ...tag, label };
+      } else {
+        return tag;
+      }
+    }))
+  }
+
+  function deleteTag(id: string) {
+    setTags(prev => prev.filter(note => note.id !== id))
   }
 
   return (
     <Container className="my-4">
       <Routes>
-        <Route path="/" element={<NoteList notes={notesWithTags} availableTags={tags} />} />
+        <Route path="/" element={<NoteList notes={notesWithTags} availableTags={tags} deleteTag={deleteTag} updateTag={updateTag} />} />
         <Route path="/new" element={<NewNote onSubmit={onCreateNote} onAddTag={addTag} availableTags={tags} />} />
         <Route path="/:id" element={<NoteLayout notes={notesWithTags} />}>
-          <Route index element={<Note />} />
-          <Route path="edit" element={<EditNote />} />
+          <Route index element={<Note onDelete={onDelete} />} />
+          <Route path="edit" element={<EditNote onSubmit={onUpdateNote} onAddTag={addTag} availableTags={tags} />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

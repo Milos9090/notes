@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import ReactSelect from "react-select"
 import { Note, Tag } from '../App'
 import NoteCard from './NoteCard'
+import EditTagsModal from './EditTagsModal'
 
 export type SimplifiedNotes = {
   tags: Tag[]
@@ -14,12 +15,14 @@ export type SimplifiedNotes = {
 type NoteListProps = {
   availableTags: Tag[];
   notes: SimplifiedNotes[];
+  deleteTag: (id: string) => void
+  updateTag: (id: string, label: string) => void
 }
 
-const NoteList = ({ availableTags, notes }: NoteListProps) => {
+const NoteList = ({ availableTags, notes, updateTag,deleteTag }: NoteListProps) => {
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [title, setTitle] = useState("");
-
+  const [editTagsModelOpen, setEditTagsModelOpen] = useState<boolean>(false)
 
   const filteredNotes = useMemo(() => {
     return notes.filter(note => {
@@ -27,6 +30,8 @@ const NoteList = ({ availableTags, notes }: NoteListProps) => {
         && (selectedTags.length === 0 || selectedTags.every(tag => note.tags.some(noteTag => noteTag.id === tag.id))))
     })
   }, [title, selectedTags, notes])
+
+  const handleClose = () => setEditTagsModelOpen(false)
 
   return (
     <>
@@ -39,7 +44,7 @@ const NoteList = ({ availableTags, notes }: NoteListProps) => {
             <Link to="/new">
               <Button variant="primary">Create</Button>
             </Link>
-            <Button variant="outline-secondary">Edit Tags</Button>
+            <Button onClick={() => setEditTagsModelOpen(true)} variant="outline-secondary">Edit Tags</Button>
           </Stack>
         </Col>
       </Row>
@@ -74,12 +79,13 @@ const NoteList = ({ availableTags, notes }: NoteListProps) => {
         </Row>
       </Form>
       <Row xs={1} sm={2} lg={3} xl={4} className="g-3">
-        { filteredNotes.map(note => (
+        {filteredNotes.map(note => (
           <Col key={note.id}>
             <NoteCard id={note.id} title={note.title} tags={note.tags} />
           </Col>
         ))}
       </Row >
+      <EditTagsModal show={editTagsModelOpen} deleteTag={deleteTag} updateTag={updateTag} handleClose={handleClose} availableTags={availableTags} />
     </>
   )
 }
